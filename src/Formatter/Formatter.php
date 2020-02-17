@@ -43,6 +43,12 @@ class Formatter implements FormatterInterface
     /** @var Node\Scenario */
     private $currentScenario;
 
+    /** @var bool */
+    private $ignoreUndefined;
+
+    /** @var bool */
+    private $ignoreSkipped;
+
     /**
      * @param string $fileNamePrefix
      * @param string $outputDir
@@ -76,6 +82,16 @@ class Formatter implements FormatterInterface
     /** @inheritdoc */
     public function setFileName($fileName) {
         $this->printer->setResultFileName($fileName);
+    }
+
+    /** @inheritdoc */
+    public function setIgnoreUndefined(bool $ignore) {
+        $this->ignoreUndefined = $ignore;
+    }
+
+    /** @inheritdoc */
+    public function setIgnoreSkipped(bool $ignore) {
+        $this->ignoreSkipped = $ignore;
     }
 
     /** @inheritdoc */
@@ -289,7 +305,11 @@ class Formatter implements FormatterInterface
         /** @var Result\ExecutedStepResult $result */
         $result = $event->getTestResult();
 
-        if ($result instanceof Result\UndefinedStepResult || $result instanceof Result\SkippedStepResult) {
+        if ($this->ignoreUndefined && $result instanceof Result\UndefinedStepResult) {
+            return;
+        }
+
+        if ($this->ignoreSkipped && $result instanceof Result\SkippedStepResult) {
             return;
         }
 
@@ -302,14 +322,18 @@ class Formatter implements FormatterInterface
         $step->setResultCode($result->getResultCode());
         $step->setDuration($this->timer->getSeconds());
 
-
-        $match = ['location' => $result->getStepDefinition()->getPath()];
         $arguments = [];
-        foreach ($result->getSearchResult()->getMatchedArguments() as $argument) {
-            $a = new \stdClass();
-            $a->val = (string) $argument;
-            $arguments[] = $a;
+        $location = 'Undefined';
+        if (!$result instanceof Result\UndefinedStepResult) {
+            $location = $result->getStepDefinition()->getPath();
+            foreach ($result->getSearchResult()->getMatchedArguments() as $argument) {
+                $a = new \stdClass();
+                $a->val = (string) $argument;
+                $arguments[] = $a;
+            }
         }
+
+        $match = ['location' => $location];
         if ($arguments) {
             $match['arguments'] = $arguments;
         }

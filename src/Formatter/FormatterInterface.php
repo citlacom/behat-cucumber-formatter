@@ -20,4 +20,21 @@ interface FormatterInterface extends FormatterOutputInterface
      * @param $fileName
      */
     public function setFileName($fileName);
+
+    /**
+     * Ignore undefined steps for reporting.
+     *
+     * @param bool $ignore
+     * @return void
+     */
+    public function setIgnoreUndefined(bool $ignore);
+
+    /**
+     * Ignore skipped steps for reporting.
+     *
+     * @param bool $ignore
+     * @return void
+     */
+    public function setIgnoreSkipped(bool $ignore);
+
 }

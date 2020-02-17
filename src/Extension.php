@@ -39,6 +39,8 @@ class Extension implements ExtensionInterface
     {
         $builder->children()->scalarNode('fileNamePrefix')->defaultValue('report');
         $builder->children()->scalarNode('outputDir')->defaultValue('build/tests');
+        $builder->children()->scalarNode('ignoreUndefined')->defaultValue(false);
+        $builder->children()->scalarNode('ignoreSkipped')->defaultValue(false);
         $builder->children()->scalarNode('fileName');
     }
 
@@ -57,6 +59,8 @@ class Extension implements ExtensionInterface
             $definition->addMethodCall('setFileName', [$config['fileName']]);
         }
 
+        $definition->addMethodCall('setIgnoreSkipped', [$config['ignoreSkipped']]);
+        $definition->addMethodCall('setIgnoreUndefined', [$config['ignoreUndefined']]);
         $container
             ->setDefinition('json.formatter', $definition)
             ->addTag('output.formatter')
